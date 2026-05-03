@@ -2,11 +2,6 @@ export class Vector {
     constructor(coords) {
         this.coords = Array.isArray(coords) ? coords : Array.from(arguments);
     }
-    static normal(dim, axis, pos) {
-        const coords = new Array(dim).fill(0);
-        coords[axis] = pos ? 1 : -1;
-        return new Vector(coords);
-    }
     dim() {
         return this.coords.length;
     }
@@ -70,10 +65,6 @@ export class Matrix {
             }
         }
     }
-    static fromVector(vec) {
-        return new Matrix([vec]);
-    }
-    // TODO: create an identity matrix of a given size
     static identity(size) {
         const cols = [];
         for (let i = 0; i < size; i++) {
@@ -83,7 +74,31 @@ export class Matrix {
         }
         return new Matrix(cols);
     }
-    // TODO: create a rotation matrix from a dimension, an angle, and a plane of rotation
+    static rotation(dim, axis1, axis2, angle) {
+        if (axis1 >= dim || axis2 >= dim || axis1 < 0 || axis2 < 0) {
+            throw new Error("Invalid axis indices for rotation matrix");
+        }
+        const cols = [];
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        for (let i = 0; i < dim; i++) {
+            const coords = new Array(dim).fill(0);
+            if (i == axis1) {
+                coords[axis1] = cos;
+                coords[axis2] = -sin;
+            } else if (i == axis2) {
+                coords[axis1] = sin;
+                coords[axis2] = cos;
+            } else {
+                coords[i] = 1;
+            }
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
+    static fromVector(vec) {
+        return new Matrix([vec]);
+    }
     numCols() {
         return this.cols.length;
     }
