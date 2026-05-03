@@ -1,6 +1,11 @@
-class Vector {
+export class Vector {
     constructor(coords) {
         this.coords = Array.isArray(coords) ? coords : Array.from(arguments);
+    }
+    static normal(dim, axis, pos) {
+        const coords = new Array(dim).fill(0);
+        coords[axis] = pos ? 1 : -1;
+        return new Vector(coords);
     }
     dim() {
         return this.coords.length;
@@ -53,7 +58,7 @@ class Vector {
     }
 }
 
-class Matrix {
+export class Matrix {
     constructor(cols) {
         this.cols = Array.isArray(cols) ? cols : Array.from(arguments);
         if (this.cols.length > 0) {
@@ -68,6 +73,8 @@ class Matrix {
     static fromVector(vec) {
         return new Matrix([vec]);
     }
+    // TODO: create an identity matrix of a given size
+    // TODO: create a rotation matrix from a dimension, an angle, and a plane of rotation
     numCols() {
         return this.cols.length;
     }
@@ -137,5 +144,3 @@ class Matrix {
         return rows.join('\n');
     }
 }
-
-export { Vector, Matrix };
