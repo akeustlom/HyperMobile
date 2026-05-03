@@ -19,7 +19,19 @@ body {
   height: 100%;
   display: block;
 }
-.overlay {
+.version{
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  padding: 12px;
+  display:flex;
+  justify-content:center;
+  pointer-events:none;
+  color: rgba(255,255,255,0.85);
+  font-size: 14px;
+}
+.notif {
   position: absolute;
   left: 0;
   right: 0;
