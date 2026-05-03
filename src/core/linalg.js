@@ -96,6 +96,26 @@ export class Matrix {
         }
         return new Matrix(cols);
     }
+    static discrete(dim, axis1, axis2) {
+        if (axis1 >= dim || axis2 >= dim || axis1 < 0 || axis2 < 0) {
+            throw new Error("Invalid axis indices for rotation matrix");
+        }
+        const cols = [];
+        for (let i = 0; i < dim; i++) {
+            const coords = new Array(dim).fill(0);
+            if (i == axis1) {
+                coords[axis1] = 0;
+                coords[axis2] = -1;
+            } else if (i == axis2) {
+                coords[axis1] = 1;
+                coords[axis2] = 0;
+            } else {
+                coords[i] = 1;
+            }
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
     static fromVector(vec) {
         return new Matrix([vec]);
     }
@@ -127,13 +147,14 @@ export class Matrix {
         return new Matrix(this.cols.map(col => col.scale(scalar)));
     }
     applyTo(other) {
-        if (other instanceof Vector) {
+        const wasVector = other instanceof Vector;
+        if (wasVector) {
             other = Matrix.fromVector(other);
         }
         const rowCount = this.numRows();
         const colCount = other.numCols();
-        if (rowCount !== colCount) {
-            throw new Error("Incompatible matrix dimensions for multiplication");
+        if (other.numRows() !== this.numCols()) {
+            throw new Error("Invalid multiplication: " + rowCount + "x" + this.numCols() + " cannot be multiplied by " + other.numRows() + "x" + colCount);
         }
         const resultVecs = new Array(colCount);
         for (let i = 0; i < colCount; i++) {
@@ -144,6 +165,9 @@ export class Matrix {
             for (let colI = 0; colI < colCount; colI++) {
                 resultVecs[colI].coords[rowI] = row.dot(other.getCol(colI));
             }
+        }
+        if (wasVector) {
+            return resultVecs[0];
         }
         return new Matrix(resultVecs);
     }

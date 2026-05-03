@@ -24,13 +24,21 @@ class Piece {
             }
         }
     }
+    getTransPos() {
+        return this.transform.applyTo(this.position);
+    }
+    turn(matrix) {
+        this.transform = matrix.applyTo(this.transform);
+    }
 }
 class PuzzleND {
-    constructor(size, dim) {
+    constructor(_size, _dim) {
+        this.size = _size;
+        this.dim = _dim;
         this.pieces = [];
-        this.generatePieces(size, dim);
+        this.generatePieces(this.size, this.dim);
         this.layers = [];
-        this.generateLayers(size);
+        this.generateLayers(this.size);
     }
     generatePieces(size, dim) {
         const outside = size - 1;
@@ -53,11 +61,42 @@ class PuzzleND {
     // Since some puzzles have oddly-spaced layers, pregenerate the layer masks
     generateLayers(size) {
         const outside = size - 1;
-        for (let i = 0; i >= -outside; i -= 2) {
+        // Layers are indexed from the outside in
+        for (let i = outside; i >= -outside; i -= 2) {
             this.layers.push(i);
+        }
+    }
+    applyMove(axis, sign, layerMask, p1, p2) {
+        // Validate the move parameters
+        if (axis >= this.dim || axis < 0) {
+            throw new Error("Grip axis out of bounds");
+        }
+        if (layerMask.length !== this.size) {
+            throw new Error("Layer mask length must match puzzle size");
+        }
+        if (p1 < 0 || p1 >= this.dim || p2 < 0 || p2 >= this.dim || p1 === p2) {
+            throw new Error("Rotation plane axes out of bounds or invalid");
+        }
+        if (p1 == axis || p2 == axis) {
+            throw new Error("Rotation plane cannot include the move axis");
+        }
+        // Create the rotation matrix for this move
+        const rotationMatrix = Matrix.discrete(this.dim, p1, p2);
+        // Turn the layer mask into a list of coordinates along the selected axis
+        const validLayers = [];
+        for (let i = 0; i < this.size; i++) {
+            if (layerMask[i]) {
+                validLayers.push(this.layers[i] * (sign ? 1 : -1));
+            }
+        }
+        // Search through pieces for ones that match the layer mask, then apply the rotation to those pieces
+        for (const piece of this.pieces) {
+            if (validLayers.includes(piece.getTransPos().get(axis))) {
+                piece.turn(rotationMatrix);
+            }
         }
     }
 }
 
-const testA = new PuzzleND(3, 4);
-console.log(testA.pieces);
+const testA = new PuzzleND(2, 4);
+testA.applyMove(0, true, [true, false], 1, 2);
