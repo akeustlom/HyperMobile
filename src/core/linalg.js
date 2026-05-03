@@ -74,6 +74,15 @@ export class Matrix {
         return new Matrix([vec]);
     }
     // TODO: create an identity matrix of a given size
+    static identity(size) {
+        const cols = [];
+        for (let i = 0; i < size; i++) {
+            const coords = new Array(size).fill(0);
+            coords[i] = 1;
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
     // TODO: create a rotation matrix from a dimension, an angle, and a plane of rotation
     numCols() {
         return this.cols.length;
