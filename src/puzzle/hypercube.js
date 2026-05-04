@@ -5,16 +5,15 @@ class Sticker {
         this.sign = _sign;
     }
     // sticker colors determined by data
-    // sticker coords, passing piece?
 }
 class Piece {
-    constructor(_position) {
-        // home position of the piece; will not change, but can be used to determine which stickers the piece has and how to transform them
+    constructor(_position, outside) {
+        // home position of the piece; will not change, used to determine stickers
         this.position = _position;
-        // current transformation of the piece; starts as identity, but will be updated as the piece is moved around
-        this.transform = Matrix.identity(4);
+        // current transformation of the piece; starts as identity, will be updated as the piece is moved around
+        this.transform = Matrix.identity(this.position.dim());
         this.stickers = [];
-        this.addStickers(this.position.dim());
+        this.addStickers(this.position.dim(), outside);
     }
     addStickers(dim, outside) {
         for (let axis = 0; axis < dim; axis++) {
@@ -31,7 +30,7 @@ class Piece {
         this.transform = matrix.applyTo(this.transform);
     }
 }
-class PuzzleND {
+export class PuzzleND {
     constructor(_size, _dim) {
         this.size = _size;
         this.dim = _dim;
@@ -66,37 +65,9 @@ class PuzzleND {
             this.layers.push(i);
         }
     }
-    applyMove(axis, sign, layerMask, p1, p2) {
-        // Validate the move parameters
-        if (axis >= this.dim || axis < 0) {
-            throw new Error("Grip axis out of bounds");
-        }
-        if (layerMask.length !== this.size) {
-            throw new Error("Layer mask length must match puzzle size");
-        }
-        if (p1 < 0 || p1 >= this.dim || p2 < 0 || p2 >= this.dim || p1 === p2) {
-            throw new Error("Rotation plane axes out of bounds or invalid");
-        }
-        if (p1 == axis || p2 == axis) {
-            throw new Error("Rotation plane cannot include the move axis");
-        }
-        // Create the rotation matrix for this move
-        const rotationMatrix = Matrix.discrete(this.dim, p1, p2);
-        // Turn the layer mask into a list of coordinates along the selected axis
-        const validLayers = [];
-        for (let i = 0; i < this.size; i++) {
-            if (layerMask[i]) {
-                validLayers.push(this.layers[i] * (sign ? 1 : -1));
-            }
-        }
-        // Search through pieces for ones that match the layer mask, then apply the rotation to those pieces
-        for (const piece of this.pieces) {
-            if (validLayers.includes(piece.getTransPos().get(axis))) {
-                piece.turn(rotationMatrix);
-            }
+    rotatePieces(pieceIds, matrix) {
+        for (const id of pieceIds) {
+            this.pieces[id].turn(matrix);
         }
     }
 }
-
-const testA = new PuzzleND(2, 4);
-testA.applyMove(0, true, [true, false], 1, 2);
