@@ -1,22 +1,37 @@
-// select pieces should use a predicate, not all this information. an alternative form can integrate this information into a predicate.
-export function selectPieces(cube, axis, layerMask, current) {
-    if (axis < 0 || axis >= cube.dim) {
-        throw new Error("Filter axis out of bounds");
-    }
-    if (Math.min(...layerMask) < 0 || Math.max(...layerMask) >= cube.size) {
-        throw new Error("Layer mask out of bounds");
-    }
-    const check = [];
-    for (let i = 0; i < layerMask.length; i++) {
-        check.push(cube.layers[layerMask[i]]);
-    }
+function selectPieces(cube, predicate) {
     const selected = [];
     for (let i = 0; i < cube.pieces.length; i++) {
         const piece = cube.pieces[i];
-        const pos = current ? piece.getTransPos() : piece.position;
-        if (check.includes(pos.get(axis))) {
+        // Allows for multiple functions to be placed in the boolean
+        if (predicate(piece)) {
             selected.push(i);
         }
     }
     return selected;
+}
+// For one axis, select pieces on the layers specified by the mask; configurable to select based on current position (grip) or solved position (piece filters)
+function selectLayer(cube, axis, layerMask, current) {
+    return selectPieces(cube, piece => {
+        const pos = current ? piece.getTransPos() : piece.position;
+        return layerMask.includes(pos.get(axis));
+    });
+}
+export function selectCurrent(cube, axis, layerMask) {
+    return selectLayer(cube, axis, layerMask, true);
+}
+export function selectSolved(cube, axis, layerMask) {
+    return selectLayer(cube, axis, layerMask, false);
+}
+// Combine multiple filters together, such as filtering on multiple axes, or having a filter active while selecting a grip
+export function composeFilters(cube, filters) {
+    if (filters.length === 0) {
+        return Array.from({length: cube.pieces.length },(_, i) => i);
+    }
+    const sorted = [...filters].sort((a, b) => a.length - b.length);
+    let result = new Set(sorted[0]);
+    for (let i = 1; i < sorted.length; i++) {
+        const current = new Set(sorted[i]);
+        result = new Set([...result].filter(id => current.has(id)));
+    }
+    return [...result];
 }
