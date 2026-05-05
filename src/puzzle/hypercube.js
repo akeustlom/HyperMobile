@@ -1,4 +1,5 @@
 import {Vector, Matrix} from '../core/linalg.js';
+import {moveEngine} from "./moves/move_engine.js";
 class Sticker {
     constructor(_axis, _sign) {
         this.axis = _axis;
@@ -33,11 +34,12 @@ export class PuzzleND {
     constructor(_size, _dim) {
         this.size = _size;
         this.dim = _dim;
-        this.pieces = [];
-        this.generatePieces(this.size, this.dim);
         this.layers = [];
         this.generateLayers(this.size);
+        this.pieces = [];
+        this.generatePieces(this.size, this.dim);
         this.history = [];
+        this.redoStack = [];
     }
     generatePieces(size, dim) {
         const outside = size - 1;
@@ -47,20 +49,19 @@ export class PuzzleND {
                 // Convert linear index to multi-dimensional coordinates
                 coords[j] = Math.floor(i / (size**j)) % size;
             }
-            // Convert coordinates to be centered around 0, in steps of 2 so that every piece is at an integer coordinate regardless of the size of the puzzle
-            const puzzleCoords = coords.map(c => (c * 2) - (outside));
+            const puzzleCoords = coords.map(c => this.layers[c]);
             // Only add a piece if it's on the outside of the puzzle, i.e., at least one coordinate is at the extreme
             if (puzzleCoords.every(c => Math.abs(c) < outside)) {
                 continue;
             }
-            const thePiece = new Piece(new Vector(puzzleCoords), outside);
-            this.pieces.push(thePiece);
+            const piece = new Piece(new Vector(puzzleCoords), outside);
+            this.pieces.push(piece);
         }
     }
     // Since some puzzles have oddly-spaced layers, pregenerate the layer masks
     generateLayers(size) {
         const outside = size - 1;
-        // Layers are indexed from the outside in
+        // Layers are centered on 0, spaced in steps of 2 such that every piece is at an integer coordinate
         for (let i = outside; i >= -outside; i -= 2) {
             this.layers.push(i);
         }
@@ -69,5 +70,8 @@ export class PuzzleND {
         for (const id of pieceIds) {
             this.pieces[id].turn(matrix);
         }
+    }
+    applyMove(move) {
+        moveEngine.applyMove(this, move);
     }
 }

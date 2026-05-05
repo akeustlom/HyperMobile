@@ -1,20 +1,17 @@
 import {Move} from "./move.js";
 import {selectCurrent} from "../filters.js";
 import {Matrix} from "./core/linalg.js";
-import {toDimension} from "./puzzle/grip_map.js";
+import {axes} from "./puzzle/grip_map.js";
 
-export function applyMove(cube, move) {
-    // TODO: verify that the move is valid
-
-    // build a rotation matrix from the move's plane
-    const discrete = Matrix.discrete(cube.dim, move.p1, move.p2);
-    // retrieve an axis and sign from the move's grip
-    const {axis: axis, sign: sign} = toDimension(move.grip);
-    // use sign to correct the layer mask
-    const layerMask = move.layerMask.map(l => cube.layers[l] * sign)
-    // select pieces based on the axis and layer mask
-    const selected = selectCurrent(cube, axis, layerMask);
-    // apply the rotation to the selected pieces
-    cube.rotatePieces(selected, discrete);
-    cube.history.push(move);
+export class moveEngine {
+    static applyMove(cube, move) {
+        // TODO: verify that a move is valid
+        
+        // build a rotation matrix from the move's plane
+        const discrete = Matrix.discrete(cube.dim, axes.indexOf(move.p1), axes.indexOf(move.p2));
+        // select pieces based on the axis and layer mask
+        const selected = selectCurrent(cube, move.grip, move.layerMask);
+        // apply the rotation to the selected pieces
+        cube.rotatePieces(selected, discrete);
+    }
 }

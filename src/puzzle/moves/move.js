@@ -1,5 +1,8 @@
 export class Move {
     constructor(_layerMask = [0], _grip, _p1, _p2) {
+        if (p1 == p2) {
+            throw new Error("Failed to create move: " + grip + p1 + p2);
+        }
         this.layerMask = _layerMask.toSorted();
         this.grip = _grip;
         this.p1 = _p1;
