@@ -1,4 +1,4 @@
-import {toDimension, resolveLayer} from "../moves/grip_map.js";
+import {toAxis, resolveLayer} from "../moves/grip_map.js";
 
 function selectPieces(cube, predicate) {
     const selected = [];
@@ -13,7 +13,7 @@ function selectPieces(cube, predicate) {
 }
 // For one axis, select pieces on the layers specified by the mask; configurable to select based on current position (grip) or solved position (piece filters)
 function selectLayers(cube, grip, layerMask, current) {
-    const {axis: axis, sign: sign} = toDimension(grip);
+    const {axis: axis, sign: sign} = toAxis(grip);
     return selectPieces(cube, piece => {
         const pos = current ? piece.getTransPos() : piece.position;
         return layerMask.includes(resolveLayer(cube, pos.get[axis] * sign));

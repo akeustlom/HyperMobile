@@ -1,3 +1,4 @@
+import {toAxis} from "./grip_map.js";
 export class Move {
     constructor(_layerMask = [0], _grip, _p1, _p2) {
         if (p1 == p2 || p1 < 0 || p2 < 0) {
@@ -5,6 +6,10 @@ export class Move {
         }
         if (!_layerMask.every(layer => layer > 0)) {
             throw new Error("Failed to create move: negative(s) in layer mask " + _layerMask);
+        }
+        const axis = toAxis(_grip)["axis"];
+        if (_p1 == axis || _p2 == axis) {
+            throw new Error("Failed to create move: plane cannot include grip axis " + _grip + "; " + _p1 + " " + _p2);
         }
         this.layerMask = _layerMask.toSorted();
         this.grip = _grip;

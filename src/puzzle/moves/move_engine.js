@@ -1,7 +1,6 @@
 import {Move} from "./move.js";
 import {selectCurrent} from "../filters.js";
 import {Matrix} from "./core/linalg.js";
-import {toAxis} from "./grip_map.js";
 
 export class moveEngine {
     static applyMove(cube, move) {
@@ -15,14 +14,10 @@ export class moveEngine {
     }
     validateMove(cube, move) {
         if (move.p1 >= cube.dim || move.p2 >= cube.dim) {
-            throw new Error("Move exceeded puzzle dimensions");
-        }
-        const axis = toAxis(move.grip)["axis"];
-        if (move.p1 == axis || move.p2 == axis) {
-            throw new Error("Tried to rotate through the grip");
+            throw new Error("Failed to execute: Move exceeded puzzle dimensions");
         }
         if (Math.max(move.layerMask) >= cube.size) {
-            throw new Error("Layer mask exceeded the puzzle");
+            throw new Error("Failed to execute:Layer mask exceeded the puzzle");
         }
     }
 }
