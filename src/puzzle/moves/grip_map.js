@@ -1,4 +1,4 @@
-export function mapGrip(grip) {
+export function toAxis(grip) {
     switch (grip) {
         case "R": return {axis: 0, sign: 1};
         case "L": return {axis: 0, sign: -1};
@@ -13,4 +13,18 @@ export function mapGrip(grip) {
         default:
             throw new Error("Unassigned grip: " + grip);
     }
+}
+export function toGrip(axis, sign) {
+    switch(axis) {
+        case 0: return sign ? "R": "L";
+        case 1: return sign ? "U": "D";
+        case 2: return sign ? "F": "B";
+        case 3: return sign ? "O": "I";
+        case 4: return sign ? "A": "P";
+        default:
+            throw new Error("Unassigned axis or sign: " + axis + ", " + sign);
+    }
+}
+export function resolveLayer(cube, layer) {
+    return cube.layers.indexOf(layer);
 }

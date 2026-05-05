@@ -18,4 +18,5 @@ export function applyMove(cube, move) {
     const selected = selectCurrent(cube, axis, layerMask);
     // apply the rotation to the selected pieces
     cube.rotatePieces(selected, discrete);
+    cube.history.push(move);
 }

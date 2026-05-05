@@ -4,7 +4,6 @@ class Sticker {
         this.axis = _axis;
         this.sign = _sign;
     }
-    // sticker colors determined by data
 }
 class Piece {
     constructor(_position, outside) {
@@ -38,6 +37,7 @@ export class PuzzleND {
         this.generatePieces(this.size, this.dim);
         this.layers = [];
         this.generateLayers(this.size);
+        this.history = [];
     }
     generatePieces(size, dim) {
         const outside = size - 1;

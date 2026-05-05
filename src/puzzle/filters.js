@@ -1,3 +1,5 @@
+import {mapGrip, resolveLayer} from "../moves/grip_map.js";
+
 function selectPieces(cube, predicate) {
     const selected = [];
     for (let i = 0; i < cube.pieces.length; i++) {
@@ -10,17 +12,18 @@ function selectPieces(cube, predicate) {
     return selected;
 }
 // For one axis, select pieces on the layers specified by the mask; configurable to select based on current position (grip) or solved position (piece filters)
-function selectLayer(cube, axis, layerMask, current) {
+function selectLayers(cube, grip, layerMask, current) {
+    const {axis: axis, sign: sign} = mapGrip(grip);
     return selectPieces(cube, piece => {
         const pos = current ? piece.getTransPos() : piece.position;
-        return layerMask.includes(pos.get(axis));
+        return layerMask.includes(resolveLayer(cube, pos.get[axis] * sign));
     });
 }
-export function selectCurrent(cube, axis, layerMask) {
-    return selectLayer(cube, axis, layerMask, true);
+export function selectCurrent(cube, grip, layerMask) {
+    return selectLayers(cube, grip, layerMask, true);
 }
-export function selectSolved(cube, axis, layerMask) {
-    return selectLayer(cube, axis, layerMask, false);
+export function selectSolved(cube, grip, layerMask) {
+    return selectLayers(cube, grip, layerMask, false);
 }
 // Combine multiple filters together, such as filtering on multiple axes, or having a filter active while selecting a grip
 export function composeFilters(cube, filters) {
