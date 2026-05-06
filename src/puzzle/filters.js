@@ -15,6 +15,7 @@ function selectPieces(cube, predicate) {
 function selectLayers(cube, grip, layerMask, current) {
     const {axis: axis, sign: sign} = toAxis(grip);
     return selectPieces(cube, piece => {
+        if (!grip) return true; // Select all pieces for full puzzle rotation
         const pos = current ? piece.getTransPos() : piece.position;
         return layerMask.includes(resolveLayer(cube, pos.get[axis] * sign));
     });

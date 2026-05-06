@@ -14,10 +14,11 @@ export class moveEngine {
     }
     validateMove(cube, move) {
         if (move.p1 >= cube.dim || move.p2 >= cube.dim) {
-            throw new Error("Failed to execute: Move exceeded puzzle dimensions");
+            throw new Error("Failed to validate move: Plane exceeded puzzle dimensions");
         }
+        if (!move.grip) return; // Allow a move through if it's a full puzzle rotation
         if (Math.max(move.layerMask) >= cube.size) {
-            throw new Error("Failed to execute:Layer mask exceeded the puzzle");
+            throw new Error("Failed to validate move: Layer mask exceeded puzzle size");
         }
     }
 }

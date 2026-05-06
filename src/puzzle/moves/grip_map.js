@@ -10,16 +10,18 @@ export const grips = [
     "Σ", "Φ",
     "Ψ", "Ω"
 ];
-export const axes = "xyzwvutsrq".split();
+export const axes = "xyzwvutsrq".split("");
 export function toAxis(grip) {
+    if (!grip) return -1;
     let index = 0;
     try {
         index = grips.indexOf(grip);
     } catch (error) {
         throw new Error("Unknown grip: " + grip);
     }
-    axis = Math.trunc(index / 2);
-    sign = index ^ 1;
+    const axis = Math.trunc(index / 2);
+    const sign = index ^ 1;
+    return {axis: axis, sign: sign};
 }
 export function toGrip(axis, sign) {
     const index = (axis * 2) + (sign > 0 ? 0 : 1);
