@@ -1,4 +1,4 @@
-export class History {
+export class Mover {
     static newMove(cube, move) {
         cube.applyMove(move);
         cube.history.push(move);
@@ -24,6 +24,7 @@ export class History {
             // tried to redo past the end of the stack, TODO: notify
         } else {
             cube.applyMove(nextMove);
+            cube.history.push(nextMove);
         }
     }
 }

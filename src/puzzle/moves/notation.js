@@ -1,6 +1,7 @@
 import {axes} from "./grip_map.js";
 import {Move} from "./move.js";
 export function stringifyMove(move) {
+    if (move === -1) return -1;
     const mask = 
         move.layerMask.length == 1 && move.layerMask[0] == 0 ?
         "" :
@@ -10,10 +11,11 @@ export function stringifyMove(move) {
     return `${mask}${grip}${plane}`;
 }
 export function parseMove(str) {
+    if (str === -1) return -1;
     const match = str.match(/^(?:\{([\d,]+)\})?([A-Z])?([a-z])([a-z])$/);
     if (!match) throw new Error("Invalid move notation " + str);
     const layerMask = match[1] ?
-        match[1].split(",").map(x => Number(x) - 1)
+        match[1].split(",").map(x => Number(x)-1)
         : [0];
     const grip = match[2];
     const p1 = axes.indexOf(match[3]);
