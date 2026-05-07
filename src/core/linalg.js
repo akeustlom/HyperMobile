@@ -10,11 +10,11 @@ export class Vector {
         return this.coords[i];
     }
     isEqual(other) {
-        if (this.dim != other.dim) {
+        if (this.dim() != other.dim()) {
             return false;
         }
         let match = true;
-        for (let i = 0; i < this.dim; i++) {
+        for (let i = 0; i < this.dim(); i++) {
             if (this.get(i) != other.get(i)) match = false;
         }
         return match;
@@ -136,7 +136,7 @@ export class Matrix {
         for (let i = 0; i < this.cols.length; i++) {
             if (!this.cols[i].isEqual(other.cols[i])) match = false;
         }
-        return false;
+        return match;
     }
     numCols() {
         return this.cols.length;

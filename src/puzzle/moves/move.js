@@ -1,4 +1,5 @@
 import {toAxis} from "./grip_map.js";
+import {Matrix} from "../../core/linalg.js";
 export class Move {
     constructor(_layerMask = [0], _grip, _p1, _p2) {
         if (_p1 == _p2 || _p1 < 0 || _p2 < 0) {
@@ -19,6 +20,9 @@ export class Move {
         this.p2 = _p2;
     }
     inverse() {
-        return new Move(this.grip, this.layerMask, this.p2, this.p1);
+        return new Move(this.layerMask, this.grip, this.p2, this.p1);
+    }
+    transform(dim) {
+        return Matrix.discrete(dim, this.p1, this.p2);
     }
 }
