@@ -1,3 +1,4 @@
+import {axes} from "./moves/grip_map.js";
 export class Vector {
     constructor(coords) {
         this.coords = Array.isArray(coords) ? coords : Array.from(arguments);
@@ -190,5 +191,45 @@ export class Matrix {
             rows.push(separator[0] + `${this.getRow(i).coords.join('\t')}` + separator[1]);
         }
         return rows.join('\n');
+    }
+    toSigned() {
+        let result = "";
+        let dim = this.numRows();
+        for (let col = 0; col < dim; col++) {
+            const vec = this.cols[col];
+            let found = 0;
+            for (let row = 0; row < dim; row++) {
+                const val = vec.get(row);
+                if (val === 1) {
+                    result += axes[row];
+                    found++;
+                    break;
+                }
+                if (val === -1) {
+                    result += axes[row].toUpperCase();
+                    found++;
+                    break;
+                }
+                if (val !== 0) {
+                    throw new Error("Piece transform has invalid value: " + this.transform.toString());
+                }
+            }
+            if (found != 1) throw new Error("Invalid transform column: " + this.transform.toString());
+        }
+        return result;
+    }
+    static fromSigned(str) {
+        const cols = [];
+        for (const ch of str) {
+            const lower = ch.toLowerCase();
+            const row = axes.indexOf(lower);
+            if (row == -1 || row >= str.length) {
+                throw new Error("Invalid transform encoding: " + str);
+            }
+            const coords = new Array(str.length).fill(0);
+            coords[row] = ch === lower ? 1 : -1;
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
     }
 }

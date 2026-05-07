@@ -1,6 +1,5 @@
 import {Vector, Matrix} from '../core/linalg.js';
 import {moveEngine} from "./moves/move_engine.js";
-import {axes} from "./moves/grip_map.js";
 import {stringifyMove, parseMove} from "./moves/notation.js";
 
 const SAVE_VERSION = 1;
@@ -36,44 +35,11 @@ class Piece {
     }
     // Serialize a piece transform as a signed-permutation string; column-first representation
     encodeTrans() {
-        let result = "";
-        let dim = this.transform.numCols();
-        for (let col = 0; col < dim; col++) {
-            const vec = this.transform.getCol(col);
-            let found = 0;
-            for (let row = 0; row < dim; row++) {
-                const val = vec.get(row);
-                if (val === 1) {
-                    result += axes[row];
-                    found++;
-                    break;
-                }
-                if (val === -1) {
-                    result += axes[row].toUpperCase();
-                    found++;
-                    break;
-                }
-                if (val !== 0) {
-                    throw new Error("Piece transform has invalid value: " + this.transform.toString());
-                }
-            }
-            if (found != 1) throw new Error("Invalid transform column: " + this.transform.toString());
-        }
-        return result;
+        return this.transform.toSigned();
     }
     decodeTrans(str) {
-        const cols = [];
-        for (const ch of str) {
-            const lower = ch.toLowerCase();
-            const row = axes.indexOf(lower);
-            if (row == -1 || row >= this.position.dim) {
-                throw new Error("Invalid transform encoding: " + str);
-            }
-            const coords = new Array(this.position.dim).fill(0);
-            coords[row] = ch === lower ? 1 : -1;
-            cols.push(new Vector(coords));
-        }
-        this.transform = new Matrix(cols);
+        if (str.length != this.position.dim) throw new Error("Transform length doesn't match puzzle dimension: " + str);
+        this.transform = Matrix.fromSigned(str);
     }
 }
 export class PuzzleND {
