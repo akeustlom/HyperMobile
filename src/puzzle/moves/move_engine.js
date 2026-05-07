@@ -1,6 +1,6 @@
 import {Move} from "./move.js";
 import {selectCurrent} from "../filters.js";
-import {Matrix} from "./core/linalg.js";
+import {Matrix} from "../../core/linalg.js";
 
 export class moveEngine {
     static applyMove(cube, move) {

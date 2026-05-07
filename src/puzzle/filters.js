@@ -1,4 +1,4 @@
-import {toAxis, resolveLayer} from "../moves/grip_map.js";
+import {toAxis, resolveLayer} from "../puzzle/moves/grip_map.js";
 
 function selectPieces(cube, predicate) {
     const selected = [];

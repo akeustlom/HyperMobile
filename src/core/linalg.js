@@ -1,4 +1,4 @@
-import {axes} from "./moves/grip_map.js";
+import {axes} from "../puzzle/moves/grip_map.js";
 export class Vector {
     constructor(coords) {
         this.coords = Array.isArray(coords) ? coords : Array.from(arguments);
@@ -8,6 +8,16 @@ export class Vector {
     }
     get(i) {
         return this.coords[i];
+    }
+    isEqual(other) {
+        if (this.dim != other.dim) {
+            return false;
+        }
+        let match = true;
+        for (let i = 0; i < this.dim; i++) {
+            if (this.get(i) != other.get(i)) match = false;
+        }
+        return match;
     }
     add(other) {
         if (this.coords.length !== other.coords.length) {
@@ -86,9 +96,9 @@ export class Matrix {
             const coords = new Array(dim).fill(0);
             if (i == axis1) {
                 coords[axis1] = cos;
-                coords[axis2] = -sin;
+                coords[axis2] = sin;
             } else if (i == axis2) {
-                coords[axis1] = sin;
+                coords[axis1] = -sin;
                 coords[axis2] = cos;
             } else {
                 coords[i] = 1;
@@ -105,11 +115,9 @@ export class Matrix {
         for (let i = 0; i < dim; i++) {
             const coords = new Array(dim).fill(0);
             if (i == axis1) {
-                coords[axis1] = 0;
-                coords[axis2] = -1;
+                coords[axis2] = 1;
             } else if (i == axis2) {
-                coords[axis1] = 1;
-                coords[axis2] = 0;
+                coords[axis1] = -1;
             } else {
                 coords[i] = 1;
             }
@@ -119,6 +127,16 @@ export class Matrix {
     }
     static fromVector(vec) {
         return new Matrix([vec]);
+    }
+    isEqual(other) {
+        if (this.numCols() != other.numCols()) {
+            return false;
+        }
+        let match = true;
+        for (let i = 0; i < this.cols.length; i++) {
+            if (!this.cols[i].isEqual(other.cols[i])) match = false;
+        }
+        return false;
     }
     numCols() {
         return this.cols.length;
@@ -134,13 +152,13 @@ export class Matrix {
     }
     add(other) {
         if (this.numCols() !== other.numCols() || this.numRows() !== other.cols[0].dim()) {
-            throw new Error("Matrices must have the same dimensions");
+            throw new Error("Matrices must have the same dimensions to add:\n" + this.toString() + "\n" + other.toString());
         }
         return new Matrix(this.cols.map((col, i) => col.add(other.cols[i])));
     }
     sub(other) {
         if (this.numCols() !== other.numCols() || this.numRows() !== other.cols[0].dim()) {
-            throw new Error("Matrices must have the same dimensions");
+            throw new Error("Matrices must have the same dimensions to subtract:\n" + this.toString() + "\n" + other.toString());
         }
         return new Matrix(this.cols.map((col, i) => col.sub(other.cols[i])));
     }
@@ -154,7 +172,7 @@ export class Matrix {
         }
         const rowCount = this.numRows();
         const colCount = other.numCols();
-        if (other.numRows() !== this.numCols()) {
+        if (this.numCols() !== other.numRows()) {
             throw new Error("Invalid multiplication: " + rowCount + "x" + this.numCols() + " cannot be multiplied by " + other.numRows() + "x" + colCount);
         }
         const resultVecs = new Array(colCount);
