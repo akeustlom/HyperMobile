@@ -1,0 +1,276 @@
+import {axes} from "../puzzle/moves/grip_map.js";
+export class Vector {
+    constructor(coords) {
+        this.coords = Array.isArray(coords) ? coords : Array.from(arguments);
+    }
+    dim() {
+        return this.coords.length;
+    }
+    get(i) {
+        return this.coords[i];
+    }
+    isEqual(other) {
+        if (this.dim() != other.dim()) {
+            return false;
+        }
+        let match = true;
+        for (let i = 0; i < this.dim(); i++) {
+            if (this.get(i) != other.get(i)) match = false;
+        }
+        return match;
+    }
+    add(other) {
+        if (this.coords.length !== other.coords.length) {
+            throw new Error("Vectors must have the same length");
+        }
+        return new Vector(this.coords.map((c, i) => c + other.get(i)));
+    }
+    sub(other) {
+        if (this.coords.length !== other.coords.length) {
+            throw new Error("Vectors must have the same length");
+        }
+        return new Vector(this.coords.map((c, i) => c - other.get(i)));
+    }
+    scale(scalar) {
+        return new Vector(this.coords.map(c => c * scalar));
+    }
+    mag() {
+        return Math.sqrt(this.coords.reduce((sum, c) => sum + c * c, 0));
+    }
+    unit() {
+        const mag = this.mag();
+        if (mag === 0) {
+            throw new Error("Cannot compute unit vector of zero vector");
+        }
+        return this.scale(1 / mag);
+    }
+    dot(other) {
+        if (this.coords.length !== other.coords.length) {
+            throw new Error("Vectors must have the same length");
+        }
+        const a = this.coords;
+        const b = other.coords;
+        let sum = 0;
+        for (let i = 0, n = a.length; i < n; i++) {
+            sum += a[i] * b[i];
+        }
+        return sum;
+    }
+    toMatrix() {
+        return new Matrix([this]);
+    }
+    toString() {
+        return this.toMatrix().toString();
+    }
+}
+
+export class Matrix {
+    constructor(cols) {
+        this.cols = Array.isArray(cols) ? cols : Array.from(arguments);
+        if (this.cols.length > 0) {
+            const expectedRows = this.cols[0].dim();
+            for (const col of this.cols) {
+                if (col.dim() !== expectedRows) {
+                    throw new Error("Matrix columns must all have the same length");
+                }
+            }
+        }
+    }
+    static identity(size) {
+        const cols = [];
+        for (let i = 0; i < size; i++) {
+            const coords = new Array(size).fill(0);
+            coords[i] = 1;
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
+    static rotation(dim, axis1, axis2, angle) {
+        if (axis1 >= dim || axis2 >= dim || axis1 < 0 || axis2 < 0) {
+            throw new Error("Invalid axis indices for rotation matrix");
+        }
+        const cols = [];
+        const cos = Math.cos(angle);
+        const sin = Math.sin(angle);
+        for (let i = 0; i < dim; i++) {
+            const coords = new Array(dim).fill(0);
+            if (i == axis1) {
+                coords[axis1] = cos;
+                coords[axis2] = sin;
+            } else if (i == axis2) {
+                coords[axis1] = -sin;
+                coords[axis2] = cos;
+            } else {
+                coords[i] = 1;
+            }
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
+    static discrete(dim, axis1, axis2) {
+        if (axis1 >= dim || axis2 >= dim || axis1 < 0 || axis2 < 0) {
+            throw new Error("Invalid axis indices for rotation matrix");
+        }
+        const cols = [];
+        for (let i = 0; i < dim; i++) {
+            const coords = new Array(dim).fill(0);
+            if (i == axis1) {
+                coords[axis2] = 1;
+            } else if (i == axis2) {
+                coords[axis1] = -1;
+            } else {
+                coords[i] = 1;
+            }
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
+    static fromVector(vec) {
+        return new Matrix([vec]);
+    }
+    isEqual(other) {
+        if (this.numCols() != other.numCols()) {
+            return false;
+        }
+        let match = true;
+        for (let i = 0; i < this.cols.length; i++) {
+            if (!this.cols[i].isEqual(other.cols[i])) match = false;
+        }
+        return match;
+    }
+    numCols() {
+        return this.cols.length;
+    }
+    numRows() {
+        return this.cols[0].dim();
+    }
+    getCol(i) {
+        return this.cols[i];
+    }
+    getRow(i) {
+        return new Vector(this.cols.map(col => col.coords[i]));
+    }
+    add(other) {
+        if (this.numCols() !== other.numCols() || this.numRows() !== other.cols[0].dim()) {
+            throw new Error("Matrices must have the same dimensions to add:\n" + this.toString() + "\n" + other.toString());
+        }
+        return new Matrix(this.cols.map((col, i) => col.add(other.cols[i])));
+    }
+    sub(other) {
+        if (this.numCols() !== other.numCols() || this.numRows() !== other.cols[0].dim()) {
+            throw new Error("Matrices must have the same dimensions to subtract:\n" + this.toString() + "\n" + other.toString());
+        }
+        return new Matrix(this.cols.map((col, i) => col.sub(other.cols[i])));
+    }
+    scale(scalar) {
+        return new Matrix(this.cols.map(col => col.scale(scalar)));
+    }
+    applyTo(other) {
+        const wasVector = other instanceof Vector;
+        if (wasVector) {
+            other = Matrix.fromVector(other);
+        }
+        const rowCount = this.numRows();
+        const colCount = other.numCols();
+        if (this.numCols() !== other.numRows()) {
+            throw new Error("Invalid multiplication: " + rowCount + "x" + this.numCols() + " cannot be multiplied by " + other.numRows() + "x" + colCount);
+        }
+        const resultVecs = new Array(colCount);
+        for (let i = 0; i < colCount; i++) {
+            resultVecs[i] = new Vector(new Array(rowCount));
+        }
+        for (let rowI = 0; rowI < rowCount; rowI++) {
+            const row = this.getRow(rowI);
+            for (let colI = 0; colI < colCount; colI++) {
+                resultVecs[colI].coords[rowI] = row.dot(other.getCol(colI));
+            }
+        }
+        if (wasVector) {
+            return resultVecs[0];
+        }
+        return new Matrix(resultVecs);
+    }
+    apply(other) {
+        return other.applyTo(this);
+    }
+    toString() {
+        const rows = [];
+        for (let i = 0; i < this.numRows(); i++) {
+            let separator;
+            if (this.numRows() == 1) {
+                separator = "()";
+            } else if (i == 0) {
+                separator = "/\\";
+            } else if (i == this.numRows() - 1) {
+                separator = "\\/";
+            } else {
+                separator = "||";
+            }
+            rows.push(separator[0] + `${this.getRow(i).coords.join('\t')}` + separator[1]);
+        }
+        return rows.join('\n');
+    }
+    isSignPerm() {
+        const rows = this.numRows();
+        const cols = this.numCols();
+        if (rows != cols) return false;
+        const rowCounts = new Array(rows).fill(0);
+        for (let col = 0; col < cols; col++) {
+            const vec = this.getCol(col);
+            let colCount = 0;
+            for (let row = 0; row < rows; row++) {
+                const val = vec.get(row);
+                if (val != -1 && val != 0 && val != 1) {
+                    return false;
+                }
+                if (val != 0) {
+                    colCount++;
+                    rowCounts[row]++;
+                }
+            }
+            if (colCount != 1) {
+                return false;
+            }
+        }
+        for (const count of rowCounts) {
+            if (count != 1) {
+                return false;
+            }
+        }
+        return true;
+    }
+    toSigned() {
+        if (!this.isSignPerm()) throw new Error("Tried to convert an invalid matrix to signed permutation:\n" +this.toString());
+        let result = "";
+        let dim = this.numRows();
+        for (let col = 0; col < dim; col++) {
+            const vec = this.cols[col];
+            for (let row = 0; row < dim; row++) {
+                const val = vec.get(row);
+                if (val == 1) {
+                    result += axes[row];
+                    break;
+                }
+                if (val == -1) {
+                    result += axes[row].toUpperCase();
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+    static fromSigned(str) {
+        const cols = [];
+        for (const ch of str) {
+            const lower = ch.toLowerCase();
+            const row = axes.indexOf(lower);
+            if (row == -1 || row >= str.length) {
+                throw new Error("Invalid transform encoding: " + str);
+            }
+            const coords = new Array(str.length).fill(0);
+            coords[row] = ch === lower ? 1 : -1;
+            cols.push(new Vector(coords));
+        }
+        return new Matrix(cols);
+    }
+}
