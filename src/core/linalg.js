@@ -210,29 +210,52 @@ export class Matrix {
         }
         return rows.join('\n');
     }
+    isSignPerm() {
+        const rows = this.numRows();
+        const cols = this.numCols();
+        if (rows != cols) return false;
+        const rowCounts = new Array(rows).fill(0);
+        for (let col = 0; col < cols; col++) {
+            const vec = this.getCol(col);
+            let colCount = 0;
+            for (let row = 0; row < rows; row++) {
+                const val = vec.get(row);
+                if (val != -1 && val != 0 && val != 1) {
+                    return false;
+                }
+                if (val != 0) {
+                    colCount++;
+                    rowCounts[row]++;
+                }
+            }
+            if (colCount != 1) {
+                return false;
+            }
+        }
+        for (const count of rowCounts) {
+            if (count != 1) {
+                return false;
+            }
+        }
+        return true;
+    }
     toSigned() {
+        if (!this.isSignPerm()) throw new Error("Tried to convert an invalid matrix to signed permutation:\n" +this.toString());
         let result = "";
         let dim = this.numRows();
         for (let col = 0; col < dim; col++) {
             const vec = this.cols[col];
-            let found = 0;
             for (let row = 0; row < dim; row++) {
                 const val = vec.get(row);
-                if (val === 1) {
+                if (val == 1) {
                     result += axes[row];
-                    found++;
                     break;
                 }
-                if (val === -1) {
+                if (val == -1) {
                     result += axes[row].toUpperCase();
-                    found++;
                     break;
-                }
-                if (val !== 0) {
-                    throw new Error("Piece transform has invalid value: " + this.transform.toString());
                 }
             }
-            if (found != 1) throw new Error("Invalid transform column: " + this.transform.toString());
         }
         return result;
     }

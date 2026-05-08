@@ -4,6 +4,16 @@ import {PuzzleND} from "./puzzle/hypercube.js";
 import {Move} from "./puzzle/moves/move.js";
 import {Mover} from "./puzzle/moves/mover.js";
 
+function assertDeepEqual(a, b, testName) {
+    const left = JSON.stringify(a);
+    const right = JSON.stringify(b);
+    if (left !== right) {
+        throw new Error(testName+" failed: Expected\n"+left+"\ngot\n"+right);
+    } else {
+        console.log(testName+" passed");
+    }
+}
+
 // Verify converting moves to and from strings
 const conversionMoves = [
     new Move([0], "R", 2, 1), // Rzy
@@ -73,18 +83,12 @@ testPuzzles.forEach((puzzle) => {
 
 // Verify that applying a move, then its inverse, preserves puzzle state
 const invMoves = [
-    {
-        puzzle: [3,3],
-        move: new Move([0], "R", 2, 1)
-    },
-    {
-        puzzle: [3,4],
-        move: new Move([0], "R", 2, 1)
-    },
-    {
-        puzzle: [4,4],
-        move: new Move([1], "U", 0, 2)
-    }
+    {puzzle: [3,3],
+        move: new Move([0], "R", 2, 1)},
+    {puzzle: [3,4],
+        move: new Move([0], "R", 2, 1)},
+    {puzzle: [4,4],
+        move: new Move([1], "U", 0, 2)}
 ];
 invMoves.forEach((test) => {
     const theCube = new PuzzleND(test["puzzle"][0], test["puzzle"][1]);
@@ -99,3 +103,40 @@ invMoves.forEach((test) => {
     });
     console.log(matches ? "inverse success" : "inverse fail");
 });
+
+// Ensure that a cube remains the same after serializing and reloading
+const serialCube = new PuzzleND(3, 4);
+Mover.newMove(serialCube, new Move([0], "R", 2, 1));
+Mover.newMove(serialCube, new Move([0,2], "U", 0, 2));
+const saved = serialCube.serialize();
+const restored = PuzzleND.deserialize(saved);
+assertDeepEqual(saved, restored.serialize(), "Serialization");
+
+// Check that every piece on the cube ^ is in a unique position after multiple moves
+const seen = new Set();
+for (const piece of serialCube.pieces) {
+    const pos = piece.getTransPos().coords.join(',');
+    // Verify that every piece is in a unique location
+    if (seen.has(pos)) throw new Error("Already seen position " + pos);
+    seen.add(pos);
+    // will throw an error if transforms are not valid signed permutations
+    piece.transform.toSigned();
+}
+console.log("Every piece is in unique location (2 moves)");
+console.log("Every piece has valid transform (2 moves)");
+
+// Verify that undoing and redoing moves returns to the same state
+Mover.newMove(serialCube, new Move([1], "F", 3, 1));
+const beforeRedo = serialCube.serialize();
+Mover.undo(serialCube);
+Mover.undo(serialCube);
+Mover.redo(serialCube);
+Mover.redo(serialCube);
+const afterRedo = serialCube.serialize();
+assertDeepEqual(beforeRedo, afterRedo, "Redo");
+
+// Verify that doing a new move clears the redo stack
+Mover.undo(serialCube);
+Mover.undo(serialCube);
+Mover.newMove(serialCube, new Move([2], "D", 2, 3));
+assertDeepEqual(serialCube.redoStack, [], "Redo clear");

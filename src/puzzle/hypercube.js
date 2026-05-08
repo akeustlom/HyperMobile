@@ -38,7 +38,7 @@ class Piece {
         return this.transform.toSigned();
     }
     decodeTrans(str) {
-        if (str.length != this.position.dim) throw new Error("Transform length doesn't match puzzle dimension: " + str);
+        if (str.length != this.position.dim()) throw new Error("Transform length doesn't match puzzle dimension: " + str);
         this.transform = Matrix.fromSigned(str);
     }
 }
