@@ -3,6 +3,11 @@ export class Vector {
     constructor(coords) {
         this.coords = Array.isArray(coords) ? coords : Array.from(arguments);
     }
+    static stick(axis, sign, dim) {
+        const coords = new Array(dim).fill(0);
+        coords[axis] = sign;
+        return new Vector(coords);
+    }
     dim() {
         return this.coords.length;
     }
