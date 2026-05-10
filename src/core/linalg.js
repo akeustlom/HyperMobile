@@ -8,6 +8,9 @@ export class Vector {
         coords[axis] = sign;
         return new Vector(coords);
     }
+    first(dim) {
+        return new Vector(this.coords.slice(0, dim).map(i => i + 0));
+    }
     dim() {
         return this.coords.length;
     }

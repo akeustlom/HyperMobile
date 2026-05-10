@@ -23,7 +23,7 @@ class Piece {
         for (let axis = 0; axis < dim; axis++) {
             const check = this.position.get(axis);
             if (Math.abs(check) == outside) {
-                this.stickers.push(new Sticker(axis, check > 0));
+                this.stickers.push(new Sticker(axis, check > 0 ? 1 : -1));
             }
         }
     }

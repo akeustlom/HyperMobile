@@ -1,5 +1,5 @@
-import {PuzzleND} from "./hypercube.js";
-import {parseMove} from "./moves/notation.js";
+import {PuzzleND} from "../puzzle/hypercube.js";
+import {parseMove} from "../puzzle/moves/notation.js";
 export class Session {
     constructor(data = new PuzzleND(3, 4).serialize()) {
         this.cube = PuzzleND.deserialize(data);
@@ -32,6 +32,9 @@ export class Session {
             this.cube.applyMove(nextMove);
             this.cube.history.push(nextMove);
         }
+    }
+    getCube() {
+        return this.cube;
     }
     snapshot() {
         return structuredClone(this.cube.pieces);
