@@ -23,7 +23,7 @@ export class Viewport {
         this.ctx.scale(dpr, dpr);
         this.centerX = this.width / 2;
         this.centerY = this.height / 2;
-        this.scale = Math.min(this.width, this.height) * 0.25;
+        this.scale = Math.min(this.width, this.height);
     }
     clear() {
         this.ctx.clearRect(0, 0, this.width, this.height);
