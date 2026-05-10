@@ -15,8 +15,3 @@ function render() {
 }
 
 render();
-
-window.addEventListener("resize", () => {
-  viewport.resize();
-  render();
-});
