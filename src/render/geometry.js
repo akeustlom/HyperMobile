@@ -2,8 +2,8 @@ import {Vector} from '../core/linalg.js';
 export function getStickerInfo(piece, sticker) {
     // TODO: Depict stickers as (N-1)-cubes rather than points
     // TODO: account for piece explode, facet spacing, and sticker shrink
-    const stickerOffset = Vector.stick(sticker.axis, sticker.sign, piece.position.dim());
-    const stickerPos = piece.position.add(stickerOffset);
+    const stickerOffset = Vector.stick(sticker.axis, sticker.sign, piece.position.dim()).scale(7); // scale: facet spacing
+    const stickerPos = piece.position.add(stickerOffset).scale(1); // scale: piece explode
 
     let color = '#000000';
     const pos = sticker.sign > 0;
