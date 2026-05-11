@@ -8,14 +8,22 @@ export class Vector {
         coords[axis] = sign;
         return new Vector(coords);
     }
-    first(dim) {
-        return new Vector(this.coords.slice(0, dim).map(i => i + 0));
-    }
     dim() {
         return this.coords.length;
     }
+    toDim(newDim) {
+        const result = new Array(newDim).fill(0);
+        for (let i = 0; i < Math.min(this.dim(), newDim); i++) {
+            result[i] = this.get(i);
+        }
+        return new Vector(result);
+    }
     get(i) {
+        if (i >= this.dim) return undefined;
         return this.coords[i];
+    }
+    max() {
+        return Math.max(...this.coords.map(x => Math.abs(x)));
     }
     isEqual(other) {
         if (this.dim() != other.dim()) {
