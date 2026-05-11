@@ -1,12 +1,9 @@
-export function project(vec, dist) {
-    let result = vec.first(4); // Orthographic projection down to 4D
-    while (result.dim() > 2) { // Perspective projection down to 2D
-        const next = result.dim()-1;
-        result = result.first(next).scale(nonZero(result.get(next)-dist));
-    }
-    return result;
+export function projectNDto3D(vec) {
+    const w = vec.get(3);
+    if (!w) return vec.toDim(3);
+    return vec.toDim(3).scale(nonZero(w/5));
 }
 
 function nonZero(x) {
-    return Math.sqrt((x + Math.sqrt(1 + (x ** 2)))/2);
+    return (Math.sqrt(x**2 + 4) + x)/2;
 }
